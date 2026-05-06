@@ -1,58 +1,38 @@
 import { appointmentService } from './appointment.service.js';
 
+/**
+ * Controller de compromissos.
+ * Faz a ponte entre as rotas Elysia e o serviço de negócio.
+ */
 export const appointmentController = {
-  async getAll(req, res) {
-    try {
-      const { date, service, status } = req.query;
-      const appointments = await appointmentService.getAll({ date, service, status });
-      res.json({ data: appointments, total: appointments.length });
-    } catch (err) {
-      res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
-    }
+  async getAll({ date, service, status }) {
+    const appointments = await appointmentService.getAll({ date, service, status });
+    return { data: appointments, total: appointments.length };
   },
 
-  async getById(req, res) {
-    try {
-      const appointment = await appointmentService.getById(req.params.id);
-      res.json({ data: appointment });
-    } catch (err) {
-      res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
-    }
+  async getById(id) {
+    const appointment = await appointmentService.getById(id);
+    return { data: appointment };
   },
 
-  async create(req, res) {
-    try {
-      const appointment = await appointmentService.create(req.body);
-      res.status(201).json({ data: appointment });
-    } catch (err) {
-      res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
-    }
+  async create(body, set) {
+    const appointment = await appointmentService.create(body);
+    set.status = 201;
+    return { data: appointment };
   },
 
-  async update(req, res) {
-    try {
-      const appointment = await appointmentService.update(req.params.id, req.body);
-      res.json({ data: appointment });
-    } catch (err) {
-      res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
-    }
+  async update(id, body) {
+    const appointment = await appointmentService.update(id, body);
+    return { data: appointment };
   },
 
-  async cancel(req, res) {
-    try {
-      const appointment = await appointmentService.cancel(req.params.id);
-      res.json({ data: appointment });
-    } catch (err) {
-      res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
-    }
+  async cancel(id) {
+    const appointment = await appointmentService.cancel(id);
+    return { data: appointment };
   },
 
-  async delete(req, res) {
-    try {
-      await appointmentService.delete(req.params.id);
-      res.json({ message: 'Compromisso removido com sucesso.' });
-    } catch (err) {
-      res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor.' });
-    }
+  async delete(id) {
+    await appointmentService.delete(id);
+    return { message: 'Compromisso removido com sucesso.' };
   },
 };

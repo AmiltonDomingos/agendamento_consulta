@@ -1,6 +1,6 @@
 # Clínica Sagrada Esperança — API
 
-API RESTful para gestão de consultas da Clínica Sagrada Esperança, desenvolvida com **Node.js**, **Express.js** e **PostgreSQL**.
+API RESTful para gestão de consultas da Clínica Sagrada Esperança, desenvolvida com **Bun.js**, **Elysia.js**, **Drizzle ORM** e **PostgreSQL**.
 
 ---
 
@@ -24,6 +24,7 @@ backend/
 │   ├── app.js
 │   └── server.js
 │
+├── drizzle.config.js
 ├── package.json
 └── .env
 ```
@@ -36,30 +37,37 @@ backend/
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Runtime | Node.js |
-| Framework | Express.js |
+| Runtime | Bun.js |
+| Framework | Elysia.js |
 | Base de Dados | PostgreSQL |
-| Driver BD | pg (node-postgres) |
+| ORM | Drizzle ORM |
+| Validação | TypeBox (nativo Elysia) |
 | Variáveis de ambiente | dotenv |
 
 ---
 
 ## Configuração local (VSCode)
 
-### 1. Clonar o repositório
+### 1. Instalar o Bun.js
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+### 2. Clonar o repositório
 
 ```bash
 git clone https://github.com/AmiltonDomingos/agendamento_consulta.git
 cd agendamento_consulta/artifacts/api-server
 ```
 
-### 2. Instalar dependências
+### 3. Instalar dependências
 
 ```bash
-npm install
+bun install
 ```
 
-### 3. Criar a base de dados PostgreSQL
+### 4. Criar a base de dados PostgreSQL
 
 Abre o teu cliente PostgreSQL (psql, pgAdmin, DBeaver, etc.) e executa:
 
@@ -80,7 +88,9 @@ CREATE TABLE appointments (
 );
 ```
 
-### 4. Configurar o ficheiro `.env`
+> Ou usa o Drizzle para criar a tabela automaticamente (ver abaixo).
+
+### 5. Configurar o ficheiro `.env`
 
 Edita o ficheiro `.env` com os dados do teu PostgreSQL local:
 
@@ -94,17 +104,29 @@ DB_PASSWORD=your_password
 DB_NAME=clinica_sagrada_esperanca
 ```
 
-### 5. Iniciar o servidor
+### 6. Migrations com Drizzle ORM (opcional)
+
+```bash
+# Aplica o schema directamente na BD (sem ficheiros de migration)
+bun run db:push
+
+# Gera ficheiros de migration em /drizzle
+bun run db:generate
+```
+
+### 7. Iniciar o servidor
 
 ```bash
 # Desenvolvimento (com hot reload)
-npm run dev
+bun run dev
 
 # Produção
-npm start
+bun run start
 ```
 
 O servidor inicia em: `http://localhost:3000`
+
+Documentação Swagger: `http://localhost:3000/api/docs`
 
 ---
 
@@ -169,7 +191,7 @@ curl -X PATCH http://localhost:3000/api/appointments/{id}/cancel
 
 | Código | Situação |
 |--------|----------|
-| `400` | Dados inválidos |
+| `400` | Dados inválidos (validação TypeBox) |
 | `404` | Compromisso não encontrado |
 | `409` | Conflito de horário |
 | `500` | Erro interno do servidor |

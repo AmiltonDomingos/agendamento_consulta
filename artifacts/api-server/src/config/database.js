@@ -1,3 +1,4 @@
+import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import dotenv from 'dotenv';
 
@@ -18,7 +19,8 @@ const pool = new Pool(
 );
 
 pool.on('error', (err) => {
-  console.error('Erro inesperado na pool de conexões:', err.message);
+  console.error('Erro na pool de conexões PostgreSQL:', err.message);
 });
 
-export default pool;
+export const db = drizzle(pool);
+export { pool };
