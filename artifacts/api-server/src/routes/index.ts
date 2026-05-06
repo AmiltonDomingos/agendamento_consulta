@@ -1,8 +1,8 @@
-import { Router, type IRouter } from "express";
-import healthRouter from "./health";
+import { Elysia } from "elysia";
+import { appointmentsRoutes } from "./appointments";
 
-const router: IRouter = Router();
-
-router.use(healthRouter);
-
-export default router;
+/**
+ * Agrupamento central de todas as rotas da API.
+ * Prefixo base: /api
+ */
+export const routes = new Elysia({ prefix: "/api" }).use(appointmentsRoutes);

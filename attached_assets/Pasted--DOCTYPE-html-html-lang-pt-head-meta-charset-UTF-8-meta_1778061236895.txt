@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Compromisso - Clínica Sagrada Esperança</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Clínica Sagrada Esperança</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="agendar.html" class="active">Agendar Novo Compromisso</a></li>
+        <li><a href="comprimisso.html">Próximos Compromissos</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <form class="formulario" id="form-agendar">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" placeholder="Digite o nome do Paciente" required>
+
+      <label for="servico">Serviço:</label>
+      <select id="servico" required>
+        <option value="">Selecione</option>
+        <option value="Pediatria">Pediatria</option>
+        <option value="Consulta geral">Consulta geral</option>
+        <option value="Ortopedia">Ortopedia</option>
+        <option value="Outros">Outros</option>
+      </select>
+
+      <label for="data">Data:</label>
+      <input type="date" id="data" required>
+
+      <label for="hora">Hora:</label>
+      <input type="time" id="hora" required>
+
+      <button type="button" id="btn-confirmar">Confirmar Compromisso</button>
+      <p id="msg" style="margin-top:10px;color:#ffdddd;"></p>
+    </form>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Clínica Sagrada Esperança. Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Próximos Compromissos - Clínica Sagrada Esperança</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Clínica Sagrada Esperança</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="agendar.html">Agendar Novo Compromisso</a></li>
+        <li><a href="comprimisso.html" class="active">Próximos Compromissos</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Próximos Compromissos</h2>
+
+    <!-- Filtros (opcional) -->
+    <div id="filtros" style="margin:15px 0;">
+      <input type="date" id="filtro-data" style="padding:6px;border-radius:5px;border:1px solid #ccc;">
+      <select id="filtro-servico" style="padding:6px;border-radius:5px;border:1px solid #ccc;">
+        <option value="">Todos os serviços</option>
+        <option value="Pediatria">Pediatria</option>
+        <option value="Consulta geral">Consulta geral</option>
+        <option value="Ortopedia">Ortopedia</option>
+        <option value="Outros">Outros</option>
+      </select>
+      <button id="limpar-filtros" class="editar" style="margin-left:8px;">Limpar</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Paciente</th>
+          <th>Serviço</th>
+          <th>Data</th>
+          <th>Hora</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="lista-compromissos">
+        <!-- Renderizado via JavaScript -->
+      </tbody>
+    </table>
+    <p id="msg" style="margin-top:10px;color:#ffdddd;text-align:center;"></p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Clínica Sagrada Esperança. Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clínica Sagrada Esperança - Sistema de Agendamento</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Clínica Sagrada Esperança</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html" class="active">Início</a></li>
+        <li><a href="agendar.html">Agendar Novo Compromisso</a></li>
+        <li><a href="comprimisso.html">Próximos Compromissos</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="inicio">
+    <h2>Bem-vindo ao Sistema de Agendamento de Consultas</h2>
+    <p>Este sistema simula o agendamento e o gerenciamento de consultas da Clínica Sagrada Esperança.</p>
+    <p>Use o menu acima para navegar entre as páginas e visualizar as funcionalidades.</p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Clínica Sagrada Esperança. Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+// script.js
+// Chave no localStorage
+const LS_KEY = "citations";
+
+// Utilidades de armazenamento
+function loadAll() {
+  const raw = localStorage.getItem(LS_KEY);
+  try {
+    const arr = raw ? JSON.parse(raw) : [];
+    // Garantir array válido
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAll(arr) {
+  localStorage.setItem(LS_KEY, JSON.stringify(arr));
+}
+
+function genId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// Validação e conflitos
+function isValidAppointment({ client_name, service, date, time }) {
+  return (
+    client_name && client_name.trim() &&
+    service && service.trim() &&
+    date && date.trim() &&
+    time && time.trim()
+  );
+}
+
+function hasConflict(arr, { date, time }, excludeId = null) {
+  return arr.some(item => item.date === date && item.time === time && item.id !== excludeId);
+}
+
+// Ordenação cronológica: por data, depois hora
+function sortByChronology(arr) {
+  return arr.slice().sort((a, b) => {
+    const dA = a.date;
+    const dB = b.date;
+    if (dA < dB) return -1;
+    if (dA > dB) return 1;
+    if (a.time < b.time) return -1;
+    if (a.time > b.time) return 1;
+    return 0;
+  });
+}
+
+// Highlight do dia atual
+function isToday(dateStr) {
+  const today = new Date();
+  const d = new Date(dateStr + "T00:00:00");
+  return (
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+  );
+}
+
+// Helpers de DOM
+function qs(sel) { return document.querySelector(sel); }
+function qsa(sel) { return Array.from(document.querySelectorAll(sel)); }
+function setMsg(text) {
+  const el = qs("#msg");
+  if (el) el.textContent = text || "";
+}
+
+// Página Agendar: criação/edição
+function initAgendar() {
+  const form = qs("#form-agendar");
+  const btn = qs("#btn-confirmar");
+  if (!form || !btn) return;
+
+  // Se veio com ?id= para edição, carregar dados
+  const params = new URLSearchParams(location.search);
+  const editId = params.get("id");
+
+  if (editId) {
+    const arr = loadAll();
+    const item = arr.find(x => x.id === editId);
+    if (item) {
+      qs("#nome").value = item.client_name;
+      qs("#servico").value = item.service;
+      qs("#data").value = item.date;
+      qs("#hora").value = item.time;
+      setMsg("Editando compromisso existente.");
+    } else {
+      setMsg("ID não encontrado. Criando novo compromisso.");
+    }
+  }
+
+  btn.addEventListener("click", () => {
+    const client_name = qs("#nome").value.trim();
+    const service = qs("#servico").value.trim();
+    const date = qs("#data").value;
+    const time = qs("#hora").value;
+
+    const payload = { client_name, service, date, time };
+
+    if (!isValidAppointment(payload)) {
+      setMsg("Preencha nome, serviço, data e hora.");
+      return;
+    }
+
+    const arr = loadAll();
+
+    // Evitar duplicados na mesma data/hora (exceto o próprio registro ao editar)
+    if (hasConflict(arr, payload, editId || null)) {
+      setMsg("Já existe um compromisso na mesma data e hora.");
+      return;
+    }
+
+    if (editId) {
+      // Atualizar
+      const idx = arr.findIndex(x => x.id === editId);
+      if (idx >= 0) {
+        arr[idx] = {
+          ...arr[idx],
+          client_name,
+          service,
+          date,
+          time,
+          updatedAt: new Date().toISOString(),
+        };
+        saveAll(arr);
+        setMsg("Compromisso atualizado com sucesso.");
+      } else {
+        setMsg("Não foi possível atualizar: ID não encontrado.");
+        return;
+      }
+    } else {
+      // Criar
+      const newItem = {
+        id: genId(),
+        client_name,
+        service,
+        date,
+        time,
+        createdAt: new Date().toISOString(),
+      };
+      arr.push(newItem);
+      saveAll(arr);
+      setMsg("Compromisso criado com sucesso.");
+    }
+
+    // Redirecionar para a lista após 600ms
+    setTimeout(() => { location.href = "comprimisso.html"; }, 600);
+  });
+}
+
+// Página Lista (comprimisso.html): render, filtros, ações
+function initLista() {
+  const tbody = qs("#lista-compromissos");
+  if (!tbody) return;
+
+  const filtroData = qs("#filtro-data");
+  const filtroServico = qs("#filtro-servico");
+  const btnLimpar = qs("#limpar-filtros");
+
+  function render() {
+    const arr = sortByChronology(loadAll());
+    const fd = filtroData?.value || "";
+    const fs = filtroServico?.value || "";
+
+    const filtrados = arr.filter(item => {
+      const okData = fd ? item.date === fd : true;
+      const okServ = fs ? item.service === fs : true;
+      return okData && okServ;
+    });
+
+    tbody.innerHTML = "";
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5">Nenhum compromisso encontrado.</td></tr>`;
+      return;
+    }
+
+    filtrados.forEach(item => {
+      const tr = document.createElement("tr");
+
+      // Destaque para compromissos do dia
+      if (isToday(item.date)) {
+        tr.style.backgroundColor = "#ffe8a1"; // leve destaque
+      }
+
+      tr.innerHTML = `
+        <td>${item.client_name}</td>
+        <td>${item.service}</td>
+        <td>${item.date}</td>
+        <td>${item.time}</td>
+        <td>
+          <button class="editar" data-id="${item.id}">Editar</button>
+          <button class="cancelar" data-id="${item.id}">Cancelar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Bind de ações
+    qsa("button.editar").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-id");
+        location.href = `agendar.html?id=${encodeURIComponent(id)}`;
+      };
+    });
+
+    qsa("button.cancelar").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-id");
+        const arr = loadAll();
+        const novo = arr.filter(x => x.id !== id);
+        saveAll(novo);
+        setMsg("Compromisso cancelado.");
+        render();
+      };
+    });
+  }
+
+  // Filtros
+  if (filtroData) filtroData.addEventListener("change", render);
+  if (filtroServico) filtroServico.addEventListener("change", render);
+  if (btnLimpar) btnLimpar.addEventListener("click", () => {
+    if (filtroData) filtroData.value = "";
+    if (filtroServico) filtroServico.value = "";
+    render();
+  });
+
+  render();
+}
+
+// Inicialização por página
+document.addEventListener("DOMContentLoaded", () => {
+  initAgendar();
+  initLista();
+});
+
+
+/* Estilos gerais */
+body {
+  background: url("imagens/IMG-20251110-WA0007.jpg") no-repeat center center;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+
+header {
+  background-color: 0 0 0 0.45;
+  color: rgb(54, 6, 124);
+  padding: 20px;
+  text-align: center;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+label{
+    color: white;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+h1,h2,p{
+    color: white;
+}
+
+nav ul li a {
+  color: rgb(240, 233, 233);
+  text-decoration: none;
+  padding: 10px 15px;
+  display: inline-block;
+  font-size: 16px;
+  
+}
+
+nav ul li a:hover,
+nav ul li a.active {
+  background-color: #335b70;
+  border-radius: 5px;
+}
+
+main {
+  padding: 30px;
+  text-align: center;
+}
+
+.inicio {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+form.formulario {
+  max-width: 400px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+form.formulario label {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+form.formulario input,
+form.formulario select {
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+form.formulario button {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #335b70;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+form.formulario button:hover {
+  background-color: #0096c7;
+}
+
+/* Tabela */
+table {
+  width: 90%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background:#ccc;
+  color:#0077b6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+th {
+  background-color: #0077b6;
+  color: white;
+}
+
+button.editar {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.cancelar {
+  background-color: #e63946;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.editar:hover {
+  background-color: #45a049;
+}
+
+button.cancelar:hover {
+  background-color: #d62828;
+}
+
+/* Rodapé */
+footer {
+  background-color: 0 0 0 0.1;
+  color: rgb(50, 18, 110);
+  text-align: center;
+  padding: 15px;
+  margin-top: 30px;
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+  }
+
+  table, th, td {
+    font-size: 14px;
+  }
+
+  form.formulario {
+    width: 90%;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  form.formulario input,
+  form.formulario select {
+    font-size: 0.9rem;
+  }
+
+  table {
+    width: 100%;
+    font-size: 12px;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

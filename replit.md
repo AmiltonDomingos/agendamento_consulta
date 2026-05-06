@@ -1,45 +1,77 @@
-# [Project name]
+# Clínica Sagrada Esperança — API
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+API RESTful para gestão de consultas da Clínica Sagrada Esperança, construída com Bun.js, Elysia.js e PostgreSQL.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev` — inicia a API com Bun (porta 8080)
+- `pnpm --filter @workspace/api-server run db:push` — aplica o schema no PostgreSQL
+- `pnpm --filter @workspace/api-server run db:generate` — gera migrations com Drizzle Kit
+- `pnpm run typecheck` — typecheck completo de todos os packages
+- Required env: `DATABASE_URL` — PostgreSQL connection string
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Runtime: Bun.js 1.3.6
+- Framework: Elysia.js (com @elysiajs/cors e @elysiajs/swagger)
+- DB: PostgreSQL + Drizzle ORM (drizzle-orm/node-postgres)
+- Validação: TypeBox nativo do Elysia (t.Object, t.Union, t.Literal)
+- Documentação: Swagger UI em /api/docs
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+```
+artifacts/api-server/
+├── src/
+│   ├── index.ts                         # Entry point — Elysia app
+│   ├── db/
+│   │   ├── index.ts                     # Conexão PostgreSQL + Drizzle
+│   │   └── schema/
+│   │       └── appointments.ts          # Schema da tabela appointments
+│   ├── routes/
+│   │   ├── index.ts                     # Agregador de rotas (/api)
+│   │   └── appointments.ts             # Rotas de compromissos (Elysia plugin)
+│   ├── controllers/
+│   │   └── appointments.controller.ts  # Handlers de request/response
+│   ├── services/
+│   │   └── appointments.service.ts     # Lógica de negócio + queries Drizzle
+│   └── middleware/
+│       └── error-handler.ts            # HttpError class para erros tipados
+└── drizzle.config.ts                    # Config do Drizzle Kit
+```
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **Elysia plugins** — cada domínio é um `new Elysia({ prefix })` reutilizável, montado em `src/routes/index.ts`
+- **HttpError class** — permite lançar erros HTTP tipados nos controllers, capturados centralmente pelo `onError` do Elysia
+- **Soft delete** — cancelamento via `PATCH /:id/cancel` preserva o histórico; `DELETE /:id` remove permanentemente
+- **Conflito de horário** — verificado no service antes de criar/atualizar, retorna 409 com mensagem clara
+- **Sem build step** — Bun executa TypeScript nativamente; sem esbuild ou compilação intermédia
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- `GET /api/appointments` — listar compromissos (filtros: date, service, status)
+- `GET /api/appointments/:id` — obter por ID
+- `POST /api/appointments` — criar compromisso (valida campos, deteta conflito)
+- `PUT /api/appointments/:id` — atualizar compromisso
+- `PATCH /api/appointments/:id/cancel` — cancelar (soft delete)
+- `DELETE /api/appointments/:id` — remover permanentemente
+- `GET /api/healthz` — health check com versão do Bun
+- `GET /api/docs` — Swagger UI com documentação interativa
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Backend apenas (sem frontend)
+- Arquitetura limpa: routes → controllers → services
+- Projeto deve parecer desenvolvido em VS Code (sem referências a Replit nos ficheiros)
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Bun executa TypeScript directamente; não há `dist/` em desenvolvimento
+- O drizzle.config.ts lê DATABASE_URL do ambiente — correr `db:push` após alterações ao schema
+- `time` guardado pelo PostgreSQL com segundos (ex: "09:00:00") mesmo que enviado como "09:00"
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Swagger UI: http://localhost/api/docs
+- Health check: http://localhost/api/healthz
