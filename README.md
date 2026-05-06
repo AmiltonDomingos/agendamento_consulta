@@ -1,6 +1,34 @@
 # Clínica Sagrada Esperança — API
 
-API RESTful para gestão de consultas da Clínica Sagrada Esperança, desenvolvida com **Bun.js**, **Elysia.js** e **PostgreSQL**.
+API RESTful para gestão de consultas da Clínica Sagrada Esperança, desenvolvida com **Node.js**, **Express.js** e **PostgreSQL**.
+
+---
+
+## Estrutura do Projeto
+
+```
+backend/
+│
+├── src/
+│   ├── modules/
+│   │   └── appointments/
+│   │       ├── appointment.controller.js
+│   │       ├── appointment.service.js
+│   │       ├── appointment.repository.js
+│   │       ├── appointment.routes.js
+│   │       └── appointment.model.js
+│
+│   ├── config/
+│   │   └── database.js
+│
+│   ├── app.js
+│   └── server.js
+│
+├── package.json
+└── .env
+```
+
+**Arquitectura:** `routes → controller → service → repository → model`
 
 ---
 
@@ -8,36 +36,75 @@ API RESTful para gestão de consultas da Clínica Sagrada Esperança, desenvolvi
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Runtime | Bun.js 1.3.6 |
-| Framework | Elysia.js |
+| Runtime | Node.js |
+| Framework | Express.js |
 | Base de Dados | PostgreSQL |
-| ORM | Drizzle ORM |
-| Validação | TypeBox (nativo do Elysia) |
-| Documentação | Swagger UI |
+| Driver BD | pg (node-postgres) |
+| Variáveis de ambiente | dotenv |
 
 ---
 
-## Estrutura do Projeto
+## Configuração local (VSCode)
 
-```
-src/
-├── index.ts                          # Entry point — Elysia app
-├── db/
-│   ├── index.ts                      # Conexão PostgreSQL + Drizzle
-│   └── schema/
-│       └── appointments.ts           # Schema da tabela appointments
-├── routes/
-│   ├── index.ts                      # Agregador de rotas (/api)
-│   └── appointments.ts               # Rotas de compromissos (Elysia plugin)
-├── controllers/
-│   └── appointments.controller.ts    # Handlers de request/response
-├── services/
-│   └── appointments.service.ts       # Lógica de negócio + queries Drizzle
-└── middleware/
-    └── error-handler.ts              # HttpError class para erros tipados
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/AmiltonDomingos/agendamento_consulta.git
+cd agendamento_consulta/artifacts/api-server
 ```
 
-**Arquitectura:** `routes → controllers → services`
+### 2. Instalar dependências
+
+```bash
+npm install
+```
+
+### 3. Criar a base de dados PostgreSQL
+
+Abre o teu cliente PostgreSQL (psql, pgAdmin, DBeaver, etc.) e executa:
+
+```sql
+CREATE DATABASE clinica_sagrada_esperanca;
+
+\c clinica_sagrada_esperanca
+
+CREATE TABLE appointments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_name TEXT NOT NULL,
+  service TEXT NOT NULL,
+  date DATE NOT NULL,
+  time TIME NOT NULL,
+  status TEXT NOT NULL DEFAULT 'scheduled',
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+```
+
+### 4. Configurar o ficheiro `.env`
+
+Edita o ficheiro `.env` com os dados do teu PostgreSQL local:
+
+```env
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_NAME=clinica_sagrada_esperanca
+```
+
+### 5. Iniciar o servidor
+
+```bash
+# Desenvolvimento (com hot reload)
+npm run dev
+
+# Produção
+npm start
+```
+
+O servidor inicia em: `http://localhost:3000`
 
 ---
 
@@ -46,13 +113,20 @@ src/
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `GET` | `/api/healthz` | Health check |
-| `GET` | `/api/docs` | Documentação Swagger UI |
-| `GET` | `/api/appointments` | Listar compromissos (filtros: `date`, `service`, `status`) |
-| `GET` | `/api/appointments/:id` | Obter compromisso por ID |
+| `GET` | `/api/appointments` | Listar compromissos |
+| `GET` | `/api/appointments/:id` | Obter por ID |
 | `POST` | `/api/appointments` | Criar compromisso |
 | `PUT` | `/api/appointments/:id` | Atualizar compromisso |
-| `PATCH` | `/api/appointments/:id/cancel` | Cancelar compromisso (soft delete) |
+| `PATCH` | `/api/appointments/:id/cancel` | Cancelar (soft delete) |
 | `DELETE` | `/api/appointments/:id` | Remover permanentemente |
+
+### Filtros disponíveis (GET /api/appointments)
+
+```
+?date=2026-05-20
+?service=Pediatria
+?status=scheduled
+```
 
 ### Serviços disponíveis
 
@@ -62,95 +136,43 @@ Pediatria | Consulta geral | Ortopedia | Outros
 
 ---
 
-## Respostas de Erro
-
-| Código | Situação |
-|--------|----------|
-| `400` | Dados inválidos / compromisso já cancelado |
-| `404` | Compromisso não encontrado |
-| `409` | Conflito de horário (mesma data e hora) |
-| `500` | Erro interno do servidor |
-
----
-
-## Instalação e Execução
-
-### Pré-requisitos
-
-- [Bun](https://bun.sh) >= 1.3.6
-- PostgreSQL
-
-### Variáveis de ambiente
-
-```env
-DATABASE_URL=postgresql://user:password@host:5432/database
-PORT=8080
-```
-
-### Comandos
-
-```bash
-# Instalar dependências
-bun install
-
-# Iniciar em desenvolvimento (com hot reload)
-bun run --watch src/index.ts
-
-# Aplicar schema na base de dados
-bunx drizzle-kit push
-
-# Gerar migrations
-bunx drizzle-kit generate
-```
-
----
-
-## Exemplo de Uso
+## Exemplos de Uso
 
 ### Criar compromisso
 
 ```bash
-curl -X POST http://localhost:8080/api/appointments \
+curl -X POST http://localhost:3000/api/appointments \
   -H "Content-Type: application/json" \
   -d '{
     "clientName": "João Silva",
     "service": "Pediatria",
-    "date": "2026-05-15",
+    "date": "2026-05-20",
     "time": "09:00"
   }'
 ```
 
-### Listar compromissos por serviço
+### Listar por serviço
 
 ```bash
-curl "http://localhost:8080/api/appointments?service=Pediatria"
+curl "http://localhost:3000/api/appointments?service=Pediatria"
 ```
 
 ### Cancelar compromisso
 
 ```bash
-curl -X PATCH http://localhost:8080/api/appointments/{id}/cancel
+curl -X PATCH http://localhost:3000/api/appointments/{id}/cancel
 ```
 
 ---
 
-## Decisões de Arquitectura
+## Respostas de Erro
 
-- **Elysia plugins** — cada domínio é um `new Elysia({ prefix })` reutilizável
-- **HttpError class** — erros HTTP tipados lançados nos controllers e capturados centralmente pelo `onError`
-- **Soft delete** — `PATCH /:id/cancel` preserva o histórico; `DELETE /:id` remove permanentemente
-- **Detecção de conflitos** — verificada no service antes de criar/atualizar, retorna `409`
-- **Sem build step** — Bun executa TypeScript nativamente
-
----
-
-## Documentação Interativa
-
-Após iniciar o servidor, acede ao Swagger UI em:
-
-```
-http://localhost:8080/api/docs
-```
+| Código | Situação |
+|--------|----------|
+| `400` | Dados inválidos |
+| `404` | Compromisso não encontrado |
+| `409` | Conflito de horário |
+| `500` | Erro interno do servidor |
 
 ---
 

@@ -15,10 +15,10 @@ run = "pnpm --filter @workspace/api-server run dev"
 [services.production]
 
 [services.production.build]
-args = ["echo", "no build step needed for Bun"]
+args = ["echo", "no build step needed"]
 
 [services.production.run]
-args = ["bun", "run", "artifacts/api-server/src/index.ts"]
+args = ["node", "artifacts/api-server/src/server.js"]
 
 [services.production.run.env]
 PORT = "8080"
